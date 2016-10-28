@@ -1,0 +1,385 @@
+
+%\documentclass[aps,pra,reprint]{revtex4-1}
+\documentclass[twoside]{article}
+\usepackage{fullpage}
+%
+
+%% Math and physics notation
+\usepackage{amsmath}
+\usepackage{resizegather}
+\input{Qcircuit}
+\DeclareMathOperator{\acosh}{acosh}
+\DeclareMathOperator{\asinh}{asinh}
+\usepackage{amssymb}
+\usepackage{physics}
+%\newcommand{\tr}{\mathsf{Tr}}
+\usepackage{braket}
+\usepackage{dsfont}
+\usepackage{mathtools}
+\usepackage{multirow}
+
+%% Figures
+\usepackage{epstopdf}
+\usepackage{float}
+
+%% Images
+\usepackage{tikz} % TikZ and PGF
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{decorations.markings}
+
+%% Comments
+\usepackage{todonotes}
+\usepackage{hyperref}
+\newcommand{\Esq}{E_{\mathrm{sq}}}
+\newcommand{\N}{\mathcal N}
+\newcommand{\Dp}{\mathcal D_p}
+\newcommand{\I}{\mathcal I}
+\newcommand{\mms}{\pi}
+
+\makeatletter
+\newcommand*{\centerfloat}{%
+  \parindent \z@
+  \leftskip \z@ \@plus 1fil \@minus \textwidth
+  \rightskip\leftskip
+  \parfillskip \z@skip}
+\makeatother
+
+
+\begin{document}
+\title{Amplitude damping error correction}
+\author{K. Goodenough}
+%\email{kdgoodenough@gmail.com}
+%\affiliation{QuTech, Delft University of Technology, Lorentzweg 1, 2628 CJ Delft, The Netherlands}
+
+    \maketitle
+\section*{Introduction}
+\nonumber
+Amplitude-damping is noise that models spontaneous emission from a higher energy state ($\Ket{1}$) to a lower energy state ($\Ket{0}$) with probability $\gamma$. This gives the following map on qubit density matrices,
+\begin{gather}
+\rho = \begin{bmatrix}
+1-p & \eta\\
+\eta^* & p
+\end{bmatrix}
+\mapsto 
+\begin{bmatrix}
+1-\left(1-\gamma\right)p & \sqrt{1-\gamma}\eta\\
+\sqrt{1-\gamma}\eta^* & \left(1-\gamma\right)p
+\end{bmatrix}
+\end{gather}
+The Kraus operators are given by
+\begin{align}
+A_0 = \begin{bmatrix}
+1 & 0\\
+0 & \sqrt{1-\gamma}
+\end{bmatrix}
+,~A_1 = \begin{bmatrix}
+0 & \sqrt{\gamma}\\
+0 & 0
+\end{bmatrix}
+\end{align}
+which act as follows on the basis states
+\begin{align}
+~~~A_0\Ket{0} = &\Ket{0},~~~~A_0\Ket{1} = \sqrt{1-\gamma}\Ket{1}\\
+\hspace*{-5mm}A_1\Ket{0} = &~0,~~~~~~A_1\Ket{1} = \sqrt{\gamma}\Ket{0}\label{eq:cheatsheet}\\
+\end{align}
+
+Importantly, we see that the no-damping event $A_0$ introduces a distortion factor of $\sqrt{1-\gamma}$ for the $\Ket{1}$ state.
+
+The codewords are given by
+\begin{align}
+\Ket{\overline{0}} = \frac{1}{\sqrt{2}}\left[\Ket{0000}+\Ket{1111}\right]\\
+\Ket{\overline{1}} = \frac{1}{\sqrt{2}}\left[\Ket{0011}+\Ket{1100}\right]\ .
+\end{align}
+The possible errors that occur with probability proportional to $(\gamma)$ are then $A_{0000}$, $A_{1000}$, $A_{0100}$, $A_{0010}$ and $A_{0001}$, i.e.~all no-damping or damping only a first, second, third or fourth qubit, respectively. Explicitly, we (re)define
+
+\begin{gather}
+A_{0} = A_0\otimes A_0\otimes A_0\otimes A_0\\
+A_{1} = A_1\otimes A_0\otimes A_0\otimes A_0\\
+A_{2} = A_0\otimes A_1\otimes A_0\otimes A_0\\
+A_{3} = A_0\otimes A_0\otimes A_1\otimes A_0\\
+A_{4} = A_0\otimes A_0\otimes A_0\otimes A_1\\
+\end{gather}
+
+Importantly, we thus always have the distortion factor of $\sqrt{1-\gamma}$ from the no-damping case. We see that an encoded state $\Ket{\varphi} = a\Ket{\overline{0}}+b\Ket{\overline{1}}$ gets mapped to
+\begin{gather}
+A_{0}\Ket{\varphi}= \left[\frac{\Ket{0000}+\left(1-\gamma\right)^2\Ket{1111}}{\sqrt{2}}\right] + b\left[ \frac{\left(1-\gamma\right)\left(\Ket{0011}+\Ket{1100}\right)}{\sqrt{2}}\right]\\
+A_{1}\Ket{\varphi} = \sqrt{\frac{\gamma(1-\gamma)}{2}}\left[a\left(1-\gamma\right)\Ket{0111}+b\Ket{0100}\right]\\
+A_{2}\Ket{\varphi} = \sqrt{\frac{\gamma(1-\gamma)}{2}}\left[a\left(1-\gamma\right)\Ket{1011}+b\Ket{1000}\right]\\
+A_{3}\Ket{\varphi} = \sqrt{\frac{\gamma(1-\gamma)}{2}}\left[a\left(1-\gamma\right)\Ket{1101}+b\Ket{0001}\right]\\
+A_{4}\Ket{\varphi} = \sqrt{\frac{\gamma(1-\gamma)}{2}}\left[a\left(1-\gamma\right)\Ket{1110}+b\Ket{0010}\right]\\
+\end{gather}
+\section*{Approximate error correction}
+We see that this QECC does not fulfill the standard quantum error correction conditions, in particular for the no-damping error we have
+
+\begin{align}
+\Braket{\overline{0}|A_{0000}^{\dag}A_{0000}|\overline{0}}  &= \frac{1}{2}+\frac{1}{2}\left(1-\gamma\right)^4\\
+&= 1-2\gamma +3\gamma^2-2\gamma^3+\frac{1}{2}\gamma^4\\
+\Braket{\overline{1}|A_{0000}^{\dag}A_{0000}|\overline{1}} &= \left(1-\gamma\right)^2\\
+ & = 1-2\gamma+\gamma^2
+\end{align}
+and for each of the the damping errors $\tilde{A}_{1}$ we have
+\begin{align}
+\Braket{\overline{0}|\tilde{A}_{1}^{\dag}\tilde{A}_{1}|\overline{0}} &= \frac{\gamma\left(1-\gamma\right)}{2}\left(1-\gamma\right)^2\\
+\Braket{\overline{1}|\tilde{A}_{1}^{\dag}\tilde{A}_{1}|\overline{1}} &= \frac{\gamma\left(1-\gamma\right)}{2}
+\end{align}
+This is all due to the no-damping distortion, since the resultant states are all orthogonal (so that the errors can be detected), but there is (informally speaking) a relative distortion between the $a$ and $b$ amplitude (so that the state can not be restored with a unitary operation). For small $\gamma$ the distortion becomes small, so that we neglect it.
+
+\subsection*{Correction}
+If we neglect the distortion, then the resultant states are approximately
+
+\begin{gather}
+A_{0}\Ket{\varphi}\approx \Ket{\varphi}\\
+A_{1}\Ket{\varphi} \approx \sqrt{\frac{\gamma}{2}}\left[a\Ket{0111}+b\Ket{0100}\right]\\
+A_{2}\Ket{\varphi} \approx \sqrt{\frac{\gamma}{2}}\left[a\Ket{1011}+b\Ket{1000}\right]\\
+A_{3}\Ket{\varphi} \approx \sqrt{\frac{\gamma}{2}}\left[a\Ket{1101}+b\Ket{0001}\right]\\
+A_{4}\Ket{\varphi} \approx \sqrt{\frac{\gamma}{2}}\left[a\Ket{1110}+b\Ket{0010}\right]\\
+\end{gather}
+
+If we now perform two parity measurements $Z_1Z_2$ and $Z_3Z_4$ using two ancillary qubits, we get the following identification
+
+\begin{center}
+\begin{tabular}{c | c | c}
+$Z_1Z_2$ & $Z_3Z_4$ & Outcome \\
+\hline
++1 & +1 & \textrm{No damp}\\
+-1 & +1 & \textrm{Damp 1/2}\\
++1 & -1 & \textrm{Damp 3/4}\\
+-1 & -1 & $\textrm{Higher-order effect}$\\
+\end{tabular}
+\end{center}
+
+If the measurement outcomes are $+1$ and $+1$ we keep the state as is (and do not decode since we are interested in performing multiple QEC cycles). If we get the outcome $-1,+1$ we have damping on either 1 or 2. We can then measure the first qubit directly to see whether or not we had damping on 1 or 2. Explicitly, measuring $+1$ means the first qubit was damped, while $-1$ means the second qubit was damped. We can do a similar method if we have damping 3 or 4 by measuring the third qubit directly.\\
+
+Up to distortion, we can correct the states by applying this method ( arXiv preprint arXiv:0710.1052 (2007)),
+\begin{itemize}
+\item   Apply a Hadamard gate on the damped qubit.
+\item   With damped qubit as the control, apply a CNOT gate to every other qubit
+\item   Flip the damped qubit
+\end{itemize}
+In our case, we apply controlled-z instead of CNOT due to the experimental setup.
+
+We can then repeat this cycle as often as desired. In the script, we also project back unto the codespace. Let's see how well the protocol works for a single cycle as a function of $\gamma$. We plot here the entanglement fidelity (discussed later on) vs.~$\gamma$ for an encoded qubit (unsymmetrized protocol), the `symmetrized protocol' (not discussed here) and a non-encoded qubit.
+
+\begin{figure}[H]
+\centerfloat
+\includegraphics[width = 0.6\textwidth,clip = true, trim = 24mm 0 5mm 0]{perfect_encoding_1.eps}
+\end{figure}
+Zoomed in:
+
+\begin{figure}[H]
+\centerfloat
+\includegraphics[width = 0.6\textwidth,clip = true, trim = 24mm 0 5mm 0]{perfect_encoding_3.eps}
+\end{figure}
+The encoded qubit clearly performs better than the bare qubit for small $\gamma$.
+\newpage
+\subsection*{Noise}
+The circuit for damping on the first qubit is then
+
+\centerline{
+\Qcircuit @C=0.5em @R=0.5em {
+ & &  & & &  & & & & &  &  & & & & & & & & & & & & & \\
+ & &  & & &  & & & & &  &  & & & & &  & +1& & & & & & &\\
+ & &  & & &  & & & & &  &  & & & & & & & & & & & & & \\
+\lstick{\Ket{\psi}} & \ctrl{1} & \gate{H} &\ctrl{1} & \gate{H} & \qw &\qw & \ctrl{4} &\qw & \qw & \qw & \qw & \qw & \qw & \qw & \qw & \qw& \meter \cwx{-1}& \gate{H} & \ctrl{1}& \gate{X}& \qw & \qw &\\
+\lstick{\Ket{+}} & \ctrl{-1}  & \qw &\ctrl{1} & \gate{H} &\qw& \qw & \qw &\ctrl{3} & \qw & \qw & \qw& \qw &\qw & \qw & \qw & \qw & \qw& \gate{H} & \ctrl{1}& \gate{H}& \qw& \qw &\\
+\lstick{\Ket{+}}& \qw & \qw &\ctrl{1} & \gate{H} & \qw& \qw&\qw & \qw  & \ctrl{2} & \qw & \qw& \qw & \qw & \qw & \qw &\qw& \qw &\gate{H}& \ctrl{1}& \gate{H}& \qw&  \qw &\\
+\lstick{\Ket{+}}& \qw & \qw &\ctrl{-1} & \qw&\qw & \qw & \qw &\qw & \qw  & \ctrl{2}& \qw & \qw & \qw & \qw& \qw& \qw &\qw& \gate{H}& \ctrl{-1}\gategroup{3}{2}{7}{7}{.7em}{--}& \gate{H} \gategroup{4}{8}{10}{17}{.7em}{--}& \qw \gategroup{1}{17}{7}{24}{.7em}{--} &  \qw & \\
+&&&&&\lstick{\Ket{+}}&\qw&\ctrl{-3}&\ctrl{-2}& \qw &\qw & \gate{H} & \meter & \cw & ~~-1& & & & & & & &\\
+&&&&&\lstick{\Ket{+}}&\qw&\qw&\qw& \ctrl{-3} &\ctrl{-2} & \gate{H} & \meter   &\cw & ~~+1& & & & & & & &\\
+& &  & & &  & & & & &  &  & & & & & & & & &\\
+}
+}
+\vspace{5mm}
+
+\centerline{
+\Qcircuit @C=0.5em @R=0.5em {
+ & &  & & &  & & & & &  &  & & & & & & & & & & & & & \\
+ & &  & & &  & & & & &  &  & & & & &  & +1& & & & & & &\\
+ & &  & & &  & & & & &  &  & & & & & & & & & & & & & \\
+\lstick{\Ket{\psi}} & \qw & \ctrl{1} & \gate{Y_{-90}} &\ctrl{1} & \gate{Y_{90}} & \qw & \ctrl{4} &\qw & \qw & \qw & \qw & \qw & \qw & \qw & \qw & \qw& \meter \cwx{-1}& \gate{Y_{90}} & \ctrl{1}& \gate{Y}& \qw & \qw &\\
+\lstick{\Ket{0}} & \gate{Y_{-90}}& \ctrl{-1}  & \qw &\ctrl{1} & \gate{Y_{90}} & \qw & \qw &\ctrl{3} & \qw & \qw & \qw& \qw &\qw & \qw & \qw & \qw & \qw& \gate{Y_{-90}} & \ctrl{1}& \gate{Y_{90}}& \qw& \qw &\\
+\lstick{\Ket{0}}& \gate{Y_{-90}} & \qw & \qw &\ctrl{1} & \gate{Y_{90}} & \qw& \qw & \qw  & \ctrl{2} & \qw & \qw& \qw & \qw & \qw & \qw &\qw& \qw &\gate{Y_{-90}}& \ctrl{1}& \gate{Y_{90}}& \qw&  \qw &\\
+\lstick{\Ket{0}}& \gate{Y_{-90}} & \qw & \qw &\ctrl{-1} & \qw&\qw & \qw & \qw &\qw  & \ctrl{2}& \qw & \qw & \qw & \qw& \qw& \qw &\qw& \gate{Y_{-90}}& \ctrl{-1}&\gate{Y_{90}} &  \qw & \\
+&&&&&\lstick{\Ket{0}}&\gate{Y_{-90}}&\ctrl{-3}&\ctrl{-2}& \qw &\qw & \gate{Y_{90}} & \meter & \cw & ~~-1& & & & & & & &\\
+&&&&&\lstick{\Ket{0}}&\gate{Y_{-90}}&\qw&\qw& \ctrl{-3} &\ctrl{-2} & \gate{Y_{90}} & \meter   &\cw & ~~+1& & & & & & & &\\
+& &  & & &  & & & & &  &  & & & & & & & & &\\
+}
+}
+\vspace{5mm}
+
+
+The first rectangle is the encoding, the second the first two parity measurements, the third the (possible) detection and correction step.
+The error models included are
+\begin{itemize}
+\item Time-dependent amplitude damping, depolarizing and dephasing noise
+\item Noisy CZ gates
+\item Noisy ancilla state preparation
+\end{itemize}
+We don't model single qubit gates as noisy, might be interesting to do so later on.
+
+\subsubsection*{Time-dependent noise}
+There are three waiting times, $t_1,t_2,t_3$. These waiting times occur after the encoding ($t_1$), before the first set of parity measurements ($t_2$), and before the possible single-qubit measurement. $t_1$ can be set arbitrary (and is thus a parameter that can optimized over), but $0.2<t_1<2$ can be expected to be optimal (where all times are in microseconds). $t_2$ and $t_3$ should be kept as short as possible. Measurement times are between $0.1$ and $1$.
+
+\subsubsection*{Noisy CZ gates}
+We model CZ gates as follows:\\
+\centerline{
+\Qcircuit @C=2em @R=2em {
+& \ctrl{1} & \qw &\\
+& \ctrl{-1}  & \qw &\\
+}
+}
+\begin{gather}
+\hspace{-6.15mm}\mathbf{=}\\
+\begin{bmatrix}
+1 & 0 & 0 & 0\\
+0 & 1 & 0 & 0\\
+0 & 0 & 1 & 0\\
+0 & 0 & 0 & -1
+\end{bmatrix}
+\rightarrow
+\begin{bmatrix}
+1 & 0 & 0 & 0\\
+0 & \sqrt{1-E_1} & \sqrt{E_1}e^{i\varphi} & 0\\
+0 & -\sqrt{E_1}e^{-i\varphi} & \sqrt{1-E_1} & 0\\
+0 & 0 & 0 & -e^{i\delta}
+\end{bmatrix}
+\end{gather}
+We set $\varphi = 0$, $E_1 = 2ps$, $\delta = \frac{4}{\sqrt{3}}\sqrt{ps}$, where $ps \approx 4.4 \cdot 10^{-4}$, see Phys. Rev. A, 87(2):022309 and Physical Review A, 88(1):012314.
+
+\subsubsection*{Noisy ancilla state preparation}
+The ancillas are not prepared perfectly. We model this as applying depolarizing noise independently on the two qubits. The depolarizing parameter is (somewhat arbitrary) expected to be between $0$ and $0.01$.
+
+
+
+\newpage
+\section*{Script}
+In the script we use the handy superoperator formalism. The superoperator in our case is a linear map from qubit density matrices to (subnormalized) qubit density matrices, written in a single matrix form. For our specific case, let us make the following `computational basis' mapping $f$,
+
+\begin{align}
+\begin{bmatrix}
+1 & 0\\
+0 & 0
+\end{bmatrix} & \rightarrow \begin{bmatrix}
+1\\
+0\\
+0\\
+0
+\end{bmatrix},~\begin{bmatrix}
+0 & 1\\
+0 & 0
+\end{bmatrix}  \rightarrow \begin{bmatrix}
+0\\
+1\\
+0\\
+0
+\end{bmatrix},\\
+\begin{bmatrix}
+0 & 0\\
+1 & 0
+\end{bmatrix} & \rightarrow \begin{bmatrix}
+0\\
+0\\
+1\\
+0
+\end{bmatrix},~\begin{bmatrix}
+0 & 0\\
+0 & 1
+\end{bmatrix}  \rightarrow \begin{bmatrix}
+0\\
+0\\
+0\\
+1
+\end{bmatrix}.
+\end{align}
+That is, we map basis elements from the (complex) vector space of $2\times 2$-matrices to basis elements of $\mathbb{C}^{4}$\footnote{This mapping $f$ is equal to the vectorization mapping, depending on convention, see Wikipedia}. This also generalizes easy to higher dimension since both vector spaces have dimension $n^2$. Due to linearity, this mapping $f$ is a (non-canonical) isomorphism, $\mathbb{C}^{(n,n)}\simeq \mathbb{C}^{n^2}$. Restricting the mapping there is thus also immediately a (non-canonical) isomorphism between the density matrices of dimension $n$, $\mathcal{P}^n$ and the image of $\mathcal{P}^n$ under $f$. Since linear transformations in $\mathbb{C}^{n^2}$ are represented by $n\times n$ complex matrices, we can find such an operation $g$ with corresponding matrix $\mathcal{S}$ such that for any channel $\N$ that $\N = f^{-1}\circ g \circ f$. That is, we apply the map $f$ on a density matrix to get a vector, multiply that by a matrix $\mathcal{S}$ (the superoperator), and then transform back to a density matrix. By construction, there is a bijection between superoperators and channels.\\
+
+What is the benefit of the superoperator formalism? It allows us to condense the whole noisy QECC cycle to a single 4 by 4 matrix, from which we can easily apply it to any state any amount of times, without running through 	each of the cycles. Furthermore, we don't have to perform a Monte Carlo simulation, we get all the info in one go.
+
+So how do you get the superoperator? Since $f$ and $g$ are linear mappings between vector spaces, we just have to find how the $i$'th basis element in the real vector space of Hermitian matrices gets mapped under the action of the channel $\N$ and apply $f$. By the choice of basis and linearity, the resulting vector will be the $i$'th column vector in the superoperator $\mathcal{S}$. This is exactly what is done in the script.
+
+Let us first see what happens if we have a single Kraus operator $A_1$,
+
+\begin{align}
+\N(\cdot) = A_1(\cdot)A_1^{\dag}\ .
+\end{align}
+If we plug in the $x'$th basis element $\left(\rho^{lm}\right)$, i.e. a matrix with zeros everywhere except for a 1 in the $l,m$'th position, we use the following relation to get (see Wikipedia, vectorization, and notice that $f = vec\left((\cdot)^T\right)$)
+
+\begin{gather}
+f(ABC) = \left(A\otimes C^T\right)f(B)\\
+\rightarrow f(A_1\rho^{lm}A_1^{\dag}) = \left(A_1\otimes {A_1}^*\right)f(\rho^{lm}) = \left(A_1\otimes {A_1} ^*\right)\Ket{x}
+\end{gather}
+where $\Ket{x}$ is the $x$'th unit vector.
+The superoperator is then
+\begin{align}
+\mathcal{S} &= \sum_{x = 0}\left(\left(A_1\otimes {A_1}^*\right)\Ket{x}\right)\Bra{x}\\
+&= \sum_{x = 0}\left(A_1\otimes {A_1}^*\right)\Ket{x}\Bra{x}\\
+&= A_1\otimes {A_1}^*
+\end{align}
+where $\lbrace\Ket{i}\rbrace_{x=1}^{n^2}$ is an orthonormal basis of $\mathbb{C}^{n^2}$. Since $f$ is a linear transformation, we have for any (non trace-preserving) quantum channel  
+
+\begin{align}
+\N(\cdot) =\sum A_i(\cdot)A_i^{\dag}\ .
+\end{align}
+that 
+
+\begin{align}
+\mathcal{S} = \sum_{i}A_i\otimes {A_i}^*
+\end{align}
+Note that the map $f$ was a non-canonical isomorphism, i.e.~there is a freedom in how we map from basis elements in $\mathbb{C}^{n,n}$ to $\mathbb{C}^{n^2}$, even after we have fixed a basis of both $\mathbb{C}^{n,n}$ and $\mathbb{C}^{n^2}$. However, note that the construction of $\mathcal{S}$ does not depend on the choice of basis of $\mathbb{C}^{n^2}$ or the choice of $A_i$, since there is a unitary freedom $A_j = \sum_{l}U_{jl}\tilde{A}_l$:
+
+\begin{align}
+\mathcal{S} &= \sum_j A_j \otimes A_j^*\\
+&= \sum_j \sum_{l}U_{jl}\tilde{A}_l \otimes \sum_{l'}U_{jl'}^*{\tilde{A}_{l'}}^*\\
+&=\sum_{l,l'}\sum_jU_{jl}{U^*}_{jl'} \left(\tilde{A}_l\otimes {\tilde{A}_{l'}}^*\right)\\
+&=\sum_{l,l'}\left(\sum_j\left(U_{lj}\right)^T{U^*}_{jl'}\right) \left(\tilde{A}_l\otimes {\tilde{A}_{l'}}^*\right)\\
+&=\sum_{l,l'}\left(U^TU^*\right)_ij \left(\tilde{A}_l\otimes {\tilde{A}_{l'}}^*\right)\\
+&=\sum_{l,l'}\delta_{l l'}\left(\tilde{A}_l\otimes {\tilde{A}_{l'}}^*\right)\\
+&= \sum_{l}\left(\tilde{A}_l\otimes {\tilde{A}_{l}}^*\right)\ ,
+\end{align}
+and so it only depends on the choice of basis of $\mathbb{C}^{n,n}$).
+
+
+This formulation allows us to find the superoperator $\tilde{\mathcal{S}}$ when applying the QEC cycle to one half of an bipartite state given the original $\mathcal{S}$. Now the Kraus operators are given by
+\begin{align}
+\mathrm{id}_{n} \otimes A_i
+\end{align}
+so that
+\begin{align}
+\tilde{\mathcal{S}} &= \sum_{i}\left(\mathrm{id}_{n}\otimes A_i\otimes\mathrm{id}_{n}\otimes  {A_i}^*\right)\\
+& = \sum_{i}P\left(\mathrm{id}_{n}\otimes \mathrm{id}_{n}\otimes A_i\otimes  {A_i}^*\right)P^T\\
+& = P\left(\sum_{i}\mathrm{id}_{n^2}\otimes A_i\otimes  {A_i}^*\right)P^T\\
+& = P\left( \mathrm{id}_{n^2}\otimes\left(\sum_{i} A_i\otimes  {A_i}^*\right)\right)P^T\\
+& = P\left( \mathrm{id}_{n^2}\otimes\mathcal{S}\right)P^T\\
+\end{align}
+where $P = \mathrm{id}_n \otimes K^{n,n}\mathrm{id}_n$, where $K^{n,n}$ is the commutation matrix
+\begin{align}
+K^{n,n} = \sum_{i,j=1}^n\hspace{-0.5mm}\rho^{ij}\otimes \rho^{ji}
+\end{align}
+In our case, $n = 2$ so that
+
+\begin{align}
+K^{2,2} = \begin{bmatrix}
+1 & 0 & 0 & 0\\
+0 & 0 & 1 & 0\\
+0 & 1 & 0 & 0\\
+0 & 0 & 0 & 1\\
+\end{bmatrix},
+\end{align}
+i.e. just the ordinary qubit swap gate. This can also be easily generalized to all channels in the form $\N_1 \otimes \N_2$.
+
+Using the new superoperator, we calculate the entanglement fidelity $F(\Psi,\left(\mathrm{I}\otimes \N^k\right)(\Psi))$ for each cycle $k$ (where in the script we used the convention of the fidelity without the square root).
+%
+%
+%where we have used that $\left(\left(\rho^{lm}\right){A_1^{\dag}}\right)_{ij} = \sum_{k=1}^{n}\left(\rho^{lm}\right)_{ik}\left({A_1}^{\dag}\right)_{kj} = \sum_{k=1}^{n}\left(\rho^{lm}\right)_{ik}\left({A_1}^{*}\right)_{jk} = \delta_{il}\sum_{k=1}^{n}\left(\rho^{lm}\right)_{lk}\left({A_1}^{*}\right)_{jk} = \delta_{il}\sum_{k=1}^{n}\delta_{mk}\left({A_1}^{*}\right)_{jk} = \delta_{il}\left({A_1}^{*}\right)_{jm}$, so that we pick out exactly the row that we see in the equation above. 
+
+
+
+The main part of the script is in the file QECC\_main.py.\\
+
+The file ErrorModels.py contains the subroutines for applying dephasing, depolarizing and amplitude damping to a single qubit, the subroutine that applies a given single qubit gate to a selection of qubits (very handy!), and the subroutine that returns a noisy cz gate for a given $ps$. The subroutines for applying dephasing, depolarizing and amplitude damping are only for a single qubit to make it more flexible. When applying noise over all qubits, we just loop over all qubits.
+
+The file Measurements\_and\_correction.py contains the subroutines for the step after the parity measurements. This includes subroutines for the creation of all projection matrices required for the measurement, the measurement and correction step after the parity checks, the subroutine for the actual damping correction, and the perfect decoding.
+
+The Permute\_matrix.py file contains the subroutine that allows us to apply any two-qubit gate on a larger space between any two qubits $c$ and $t$. For example, we can give it a (noisy)  cz gate, specify which qubits correspond to $c$(ontrol) and $t$(arget), and give the larger state to apply the operation on. So for example, if we want to apply a (noisy) cz gate on state rho with qubit 4 as control and qubit 3 as target, we use rho = permute\_matrix(4,3, create\_noisy\_cz(E),rho), where create\_noisy\_cz(E) creates a noisy two-qubit cz matrix. This script is the least `clean', and would be nice if it were to be updated to make it more readable/clean with by using the swap gate.
+
+\end{document}

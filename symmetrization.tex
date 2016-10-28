@@ -1,0 +1,60 @@
+
+%\documentclass[aps,pra,reprint]{revtex4-1}
+\documentclass[twoside]{article}
+\usepackage{fullpage}
+%
+
+%% Math and physics notation
+\usepackage{amsmath}
+\usepackage{resizegather}
+\DeclareMathOperator{\acosh}{acosh}
+\DeclareMathOperator{\asinh}{asinh}
+\usepackage{amssymb}
+\usepackage{physics}
+%\newcommand{\tr}{\mathsf{Tr}}
+\usepackage{braket}
+\usepackage{dsfont}
+\usepackage{mathtools}
+\usepackage{multirow}
+
+%% Figures
+\usepackage{epstopdf}
+\usepackage{float}
+
+%% Images
+\usepackage{tikz} % TikZ and PGF
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{decorations.markings}
+
+%% Comments
+\usepackage{todonotes}
+\usepackage{hyperref}
+\newcommand{\Esq}{E_{\mathrm{sq}}}
+\newcommand{\N}{\mathcal N}
+\newcommand{\Dp}{\mathcal D_p}
+\newcommand{\I}{\mathcal I}
+\newcommand{\mms}{\pi}
+
+
+
+\begin{document}
+\title{Symmetrization of errors}
+\author{K. Goodenough}
+\maketitle
+\nonumber
+\section{Introduction}
+Assume we have a channel $\varphi_t$ parametrized by $t\geq 0$ such that 
+\begin{align}
+\varphi_{t'}\left(\varphi_t(\rho)\right) &= \varphi_{t'+t}(\rho)\ ,\forall \rho
+\end{align}
+
+In particular, we can `split up' the channel such that
+
+\begin{align}
+\varphi_{t} = \underbrace{\varphi_{t/n}\circ \varphi_{t/n}\ldots \circ \varphi_{t/n}}_{n} = \varphi_{t/n}^n\ .
+\end{align}
+Normally for QECC we would let $\varphi_t$ happen, and then detect and correct. We can make $t$ smaller, but this does not change much if the error set and codewords satisfy the QECC criteria already. Can we use the `gaps' between the $\varphi_{t/n}$ to help with correction if the QECC are \emph{approximately} fulfilled? 
+
+\section{Qubit/$n = 2$ case}
+The normal QECC criteria require that $\Braket{i_L|E^{\dag}_{\beta}E_{\alpha}|j_L} = C_{ba}\delta_{ij}$ with $C$ a Hermitian matrix. Let $\lbrace{\overline{E}_i\rbrace}$ be the set of errors we want to correct of the total channel $\varphi_t$. This then gives us pairs of error terms $(E_b,E_a)$ such that $E_aE_b \in \lbrace{\overline{E}_i\rbrace}$ where the $E_i$ are the Kraus operators of $\varphi_{t/2}$. Now assume that we have $\Braket{0_L|E^{\dag}_{\beta}E_{\alpha}|1_L} = 0,~\forall \alpha,~\beta$, but $\Braket{0_L|E^{\dag}_{\beta}E_{\alpha}|0_L} \neq \Braket{1_L|E^{\dag}_{\beta}E_{\alpha}|1_L}$. %$\lbrace{{E}_i\rbrace}$ of all Kraus operators $\lbrace{A_i\rbrace}$ of $\varphi_{t/n}$ that we consider then satisfy %$\lbrace{{E}_i\rbrace} = \lbrace E_a \in \lbrace{{E}_i\rbrace}|~\exists E_b\textrm{ s.t. }E_aE_b \in \lbrace{\overline{E}_i\rbrace} \rbrace$. That is, we only co
+\end{document}

@@ -1,0 +1,272 @@
+
+%\documentclass[aps,pra,reprint]{revtex4-1}
+\documentclass[twoside]{article}
+\usepackage{fullpage}
+%
+
+%% Math and physics notation
+\usepackage{amsmath}
+\usepackage{resizegather}
+\DeclareMathOperator{\acosh}{acosh}
+\DeclareMathOperator{\asinh}{asinh}
+\usepackage{amssymb}
+\usepackage{physics}
+%\newcommand{\tr}{\mathsf{Tr}}
+\usepackage{braket}
+\usepackage{dsfont}
+\usepackage{mathtools}
+\usepackage{multirow}
+
+%% Figures
+\usepackage{epstopdf}
+\usepackage{float}
+
+%% Images
+\usepackage{tikz} % TikZ and PGF
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{decorations.markings}
+
+%% Comments
+\usepackage{todonotes}
+\usepackage{hyperref}
+\newcommand{\Esq}{E_{\mathrm{sq}}}
+\newcommand{\N}{\mathcal N}
+\newcommand{\Dp}{\mathcal D_p}
+\newcommand{\I}{\mathcal I}
+\newcommand{\mms}{\pi}
+
+
+
+\begin{document}
+\title{Amplitude damping error correction}
+\author{K. Goodenough}
+%\email{kdgoodenough@gmail.com}
+%\affiliation{QuTech, Delft University of Technology, Lorentzweg 1, 2628 CJ Delft, The Netherlands}
+
+    \maketitle
+\section*{Introduction}
+\nonumber
+The (approximate) quantum error correction code (QECC) consists of the errors
+\begin{align}
+A_0 = \begin{bmatrix}
+1 & 0\\
+0 & \sqrt{1-\gamma}
+\end{bmatrix}
+,~A_1 = \begin{bmatrix}
+0 & \sqrt{\gamma}\\
+0 & 0
+\end{bmatrix}
+\end{align}
+where $\gamma$ is the amplitude damping parameter and the logical codewords are
+\begin{align}
+\Ket{\overline{0}} = \frac{1}{\sqrt{2}}\left[\Ket{0000}+\Ket{1111}\right]\\
+\Ket{\overline{1}} = \frac{1}{\sqrt{2}}\left[\Ket{0011}+\Ket{1100}\right]\ .
+\end{align}
+The possible errors that occur with probability $\mathcal{O}(\gamma)$ are then $A_{0000}$, $A_{1000}$, $A_{0100}$, $A_{0010}$ and $A_{0001}$, i.e.~no-damping or damping on a single qubit. We see that
+\begin{align}
+&A_0\Ket{0} = \Ket{0},~A_0\Ket{1} = \sqrt{1-\gamma}\Ket{1}\\
+&A_1\Ket{0} = 0,\ \ \ A_1\Ket{1} = \gamma\Ket{0}\\
+\end{align}
+so that an encoded state $\Ket{\varphi} = a\Ket{\overline{0}}+b\Ket{\overline{1}}$ gets mapped to
+\begin{gather}
+A_{0000}\Ket{\varphi}= \left[\frac{\Ket{0000}+\left(1-\gamma\right)^2\Ket{1111}}{\sqrt{2}}\right] + b\left[ \frac{\left(1-\gamma\right)\left(\Ket{0011}+\Ket{1100}\right)}{\sqrt{2}}\right]\\
+A_{1000}\Ket{\varphi} = \sqrt{\frac{\gamma(1-\gamma)}{2}}\left[a\left(1-\gamma\right)\Ket{0111}+b\Ket{0100}\right]\\
+A_{0100}\Ket{\varphi} = \sqrt{\frac{\gamma(1-\gamma)}{2}}\left[a\left(1-\gamma\right)\Ket{1011}+b\Ket{1000}\right]\\
+A_{0010}\Ket{\varphi} = \sqrt{\frac{\gamma(1-\gamma)}{2}}\left[a\left(1-\gamma\right)\Ket{1101}+b\Ket{0001}\right]\\
+A_{0001}\Ket{\varphi} = \sqrt{\frac{\gamma(1-\gamma)}{2}}\left[a\left(1-\gamma\right)\Ket{1110}+b\Ket{0010}\right]\\
+\end{gather}
+\section*{Approximate error correction}
+We see that this QECC does not fulfill the standard quantum error correction conditions, in particular for the no-damping error we have
+
+\begin{align}
+\Braket{\overline{0}|A_{0000}^{\dag}A_{0000}|\overline{0}}  &= \frac{1}{2}+\frac{1}{2}\left(1-\gamma\right)^4\\
+&= 1-2\gamma +3\gamma^2-2\gamma^3+\frac{1}{2}\gamma^4\\
+\Braket{\overline{1}|A_{0000}^{\dag}A_{0000}|\overline{1}} &= \left(1-\gamma\right)^2\\
+ & = 1-2\gamma+\gamma^2
+\end{align}
+and for each of the the damping errors $\tilde{A}_{1}$ we have
+\begin{align}
+\Braket{\overline{0}|\tilde{A}_{1}^{\dag}\tilde{A}_{1}|\overline{0}} &= \frac{\gamma\left(1-\gamma\right)}{2}\left(1-\gamma\right)^2\\
+\Braket{\overline{1}|\tilde{A}_{1}^{\dag}\tilde{A}_{1}|\overline{1}} &= \frac{\gamma\left(1-\gamma\right)}{2}
+\end{align}
+
+%The QECC satisfies the quantum error correction conditions for the error-set $A_1 = \lbrace A_{1,j}\rbrace_{j=1}^4$,	
+
+%\begin{align}
+%\Braket{\overline{z}|{A}_{1,i}^{\dag}A_{1,j}|\overline{z}'} &= \alpha_{i,j} \delta_{\overline{z},\overline{z}'}\\
+%&=\frac{\gamma}{2}\delta_{i,j}\delta_{\overline{z},\overline{z}'}\ .
+%\end{align}
+%Note that this does not correct for the error set $A_0 = \lbrace A_{0,j}\rbrace_{j=1}^4$, since 
+%
+%\begin{align}
+%&\Braket{\overline{0}|{A}_{0,i}^{\dag}A_{0,j}|\overline{0}} = 1- \frac{\gamma}{2}\\
+%\neq &\Braket{\overline{1}|{A}_{0,i}^{\dag}A_{0,j}|\overline{1}} = \left\{\begin{array}{@{}lr@{}}
+%        \multirow{2}{*}{$1-\frac{\gamma}{2}$} & \text{for }i,j \in \lbrace 1,2 \rbrace \\
+%                               & \text{or }i,j \in \lbrace 3,4 \rbrace \\
+%        \sqrt{1-\gamma}, & \text{else}\
+%        \end{array}\right\}\ .
+%\end{align}
+%except in the trivial case of no damping ($\gamma = 0$).
+
+\section*{No-damping error}
+The no-damping error gives the following (unnormalized) state,
+
+\begin{gather}
+a\Ket{0}+b\Ket{1}\\
+\rightarrow a\left[ \frac{\Ket{0000}+\left(1-\gamma\right)^2\Ket{1111}}{\sqrt{2}}\right] + b\left[ \frac{\left(1-\gamma\right)\left(\Ket{0011}+\Ket{1100}\right)}{\sqrt{2}}\right]\ .
+\end{gather}
+
+We see that the parts of the logical zero and one are influenced unequally. If we now first measure $ZZZZ$ we can detect if we have the no-damping scenario, so that we now we have state in the form above. If we now perform a $XXXX$ rotation, we get the state
+
+\begin{align}
+a\left[ \frac{\Ket{1111}+\left(1-\gamma\right)^2\Ket{0000}}{\sqrt{2}}\right] + b\left[ \frac{\left(1-\gamma\right)\left(\Ket{0011}+\Ket{1100}\right)}{\sqrt{2}}\right]\ .
+\end{align}
+That is, the part of the logical one remains the same as after the no-damping error, but the part of the logical zero is different. Notice that if we continue with the ordinary QEC protocol after the $XXXX$ rotation, the no-damping error will yield the state 
+
+\begin{gather}
+a\left[ \frac{\left(1-\gamma\right)^2\Ket{0000}+\left(1-\gamma\right)^2\Ket{1111}}{\sqrt{2}}\right] + b\left[ \frac{\left(1-\gamma\right)^2\left(\Ket{0011}+\Ket{1100}\right)}{\sqrt{2}}\right]\\
+\rightarrow a \Ket{\overline{0}}+b\Ket{\overline{1}}\ .
+\end{gather}
+What happens in the case of no-damping followed by a damping error (i.e.~an error from the set $A_1$) after the $XXXX$ rotation? Let us take damping on the first qubit $A_{1,1}$,
+\begin{align}
+&a\left[ \frac{\Ket{1111}+\left(1-\gamma\right)^2\Ket{0000}}{\sqrt{2}}\right] + b\left[ \frac{\left(1-\gamma\right)\left(\Ket{0011}+\Ket{1100}\right)}{\sqrt{2}}\right]\\
+&\rightarrow  a\left[ \frac{(1-\gamma)\Ket{0111}}{\sqrt{2}}\right] + b\left[ \frac{\left(1-\gamma\right)\left(\Ket{0100}\right)}{\sqrt{2}}\right]\\
+&\rightarrow a\Ket{0111}+b\Ket{0100}\ .
+\end{align}
+Similarly for the other $A_{1,j}$. Sanity check for $A_{1,3}$:
+\begin{align}
+&a\left[ \frac{\Ket{1111}+\left(1-\gamma\right)^2\Ket{0000}}{\sqrt{2}}\right] + b\left[ \frac{\left(1-\gamma\right)\left(\Ket{0011}+\Ket{1100}\right)}{\sqrt{2}}\right]\\
+&\rightarrow  a\left[ \frac{(1-\gamma)\Ket{1101}}{\sqrt{2}}\right] + b\left[ \frac{\left(1-\gamma\right)\left(\Ket{0001}\right)}{\sqrt{2}}\right]\\
+&\rightarrow a\Ket{1101}+b\Ket{0001}\ .
+\end{align}
+Concretely we have
+\begin{align}
+A_{1,1} \rightarrow a\Ket{0111}+b\Ket{0100}\\
+A_{1,2} \rightarrow a\Ket{1011}+b\Ket{1000}\\
+A_{1,3} \rightarrow a\Ket{1101}+b\Ket{0001}\\
+A_{1,4} \rightarrow a\Ket{1110}+b\Ket{0010}\\
+\end{align}
+
+This gives for the parity checks
+
+\begin{align}
+A_{1,1} \rightarrow Z_1Z_2 = -1,~Z_3Z_4 = 1\\
+A_{1,2} \rightarrow Z_1Z_2 = -1,~Z_3Z_4 = 1\\
+A_{1,3} \rightarrow Z_1Z_2 = 1,~Z_3Z_4 = -1\\
+A_{1,4} \rightarrow Z_1Z_2 = 1,~Z_3Z_4 = -1\\
+\end{align}
+
+We see that the first two parity checks allow us to distinguish between either $A_{1,1}$ or $A_{1,2}$ and $A_{1,3}$ or $A_{1,4}$ without distorting the codewords. In the first case, measuring $Z_1$ distinguishes between $A_{1,1}$ and $A_{1,2}$, while in the second case measuring $Z_3$ distinguishes between $A_{1,3}$ and $A_{1,4}$.\\
+
+How do we now go from a state like $a\Ket{0111}+b\Ket{0100}$ back to $a\Ket{\overline{0}}+b\Ket{\overline{1}}$? First note that  we have that $a\Ket{0111}+b\Ket{0100} = \Ket{01}\otimes \left(a\Ket{11}+b\Ket{00}\right)$, i.e.~ the interesting stuff is in the last two qubits. We now want to have an isometry that maps
+\begin{align}
+\Ket{11} \rightarrow \frac{1}{\sqrt{2}}\left[\Ket{0000}+\Ket{1111}\right] = \Ket{\overline{0}}\\
+\Ket{00} \rightarrow \frac{1}{\sqrt{2}}\left[\Ket{0000}+\Ket{1111}\right] = \Ket{\overline{0}}
+\end{align}
+But this is just the same as what needed to be accomplished in the case of no no-damping beforehand.
+
+\newpage
+\section{Symmetrized protocol}
+Let 
+
+\begin{gather}
+E_{00} = A_{0000} X^{\otimes 4} A_{0000}\\
+E_{01} = A_{0000} X^{\otimes 4} A_{1000}\\
+E_{02} = A_{0000} X^{\otimes 4} A_{0100}\\
+\vdots\\
+E_{30} = A_{001	0} X^{\otimes 4} A_{0000}\\
+E_{40} = A_{0001} X^{\otimes 4} A_{0000}\\
+\end{gather}
+These are all possible errors assuming we have at most one damping event. The (unnormalized) states corresponding to these errors with input $\Ket{\psi_c} = a\left(\frac{\Ket{0000}+\Ket{1111}}{\sqrt{2}}\right)+b\left(\frac{\Ket{0011}+\Ket{1100}}{\sqrt{2}}\right)$ are then
+
+\begin{align}
+E_{00} &\rightarrow \Ket{\xi_{00}}  = (1-\gamma')^2\Ket{\psi_c}\\
+E_{01} &\rightarrow \Ket{\xi_{01}} =\frac{\sqrt{\gamma'}\left(1-\gamma'\right)^2}{\sqrt{2}}\Ket{10}\left(a\Ket{00}+b\Ket{11}\right)\\
+E_{02} &\rightarrow \Ket{\xi_{02}} =\frac{\sqrt{\gamma'}\left(1-\gamma'\right)^2}{\sqrt{2}}\Ket{01}\left(a\Ket{00}+b\Ket{11}\right)\\
+E_{03} &\rightarrow \Ket{\xi_{03}} =\frac{\sqrt{\gamma'}\left(1-\gamma'\right)^2}{\sqrt{2}}\left(a\Ket{00}+b\Ket{11}\right)\Ket{10}\\
+E_{04} &\rightarrow \Ket{\xi_{04}} =\frac{\sqrt{\gamma'}\left(1-\gamma'\right)^2}{\sqrt{2}}\left(a\Ket{00}+b\Ket{11}\right)\Ket{01}\\
+E_{10} &\rightarrow \Ket{\xi_{10}} =\frac{\sqrt{\gamma'}\left(1-\gamma'\right)^{\frac{3}{2}}}{\sqrt{2}}\Ket{01}\left(a\Ket{11}+b\Ket{00}\right)\\
+E_{20} &\rightarrow \Ket{\xi_{20}} =\frac{\sqrt{\gamma'}\left(1-\gamma'\right)^{\frac{3}{2}}}{\sqrt{2}}\Ket{10}\left(a\Ket{11}+b\Ket{00}\right)\\
+E_{30} &\rightarrow \Ket{\xi_{20}} =\frac{\sqrt{\gamma'}\left(1-\gamma'\right)^{\frac{3}{2}}}{\sqrt{2}}\left(a\Ket{11}+b\Ket{00}\right)\Ket{01}\\
+E_{40} &\rightarrow \Ket{\xi_{20}} =\frac{\sqrt{\gamma'}\left(1-\gamma'\right)^{\frac{3}{2}}}{\sqrt{2}}\left(a\Ket{11}+b\Ket{00}\right)\Ket{10}\\
+\end{align}
+
+Note the structure of the errors. If we want to retrieve the state $a\Ket{00}+b\Ket{11}$, we don't need to distinguish between $E_{01}$ and $E_{02}$, $E_{03}$ and $E_{04}$, $E_{10}$ and $E_{20}$, $E_{30}$ and $E_{40}$. Furthermore, $E_{i0}$ and $E_{0i}$ are related by a logical $X$-flip. We then see that
+
+
+\begin{center}
+  \begin{tabular}{  c | c  c  c}
+& $Z_1Z_2Z_3Z_4$ & $Z_1Z_2$ & $Z_3Z_4$\\
+    \hline
+$E_{00}$ &  0 & 0 & 0 \\
+$E_{01}/E_{02}$ &  1 & 1 & 0 \\
+$E_{03}/E_{04}$ &  1 & 0 & 1 \\
+$E_{20}/E_{10}$ &  0 & 1 & 0 \\
+$E_{30}/E_{40}$ &  0 & 0 & 1 \\
+  \end{tabular}
+\end{center}
+
+Note that if $Z_1Z_2Z_3Z_4 = 1$, we only have to measure $Z_1Z_2$ to distinguish between $E_{01}/E_{02}$ and $E_{03}/E_{04}$, so in total only two measurements. For $Z_1Z_2Z_3Z_4 = 0$ and $Z_1Z_2 = 0$ we have to do a third measurement to distinguish between $E_{00}$ and $E_{30}/E_{40}$. Now we don't have distinguished the states corresponding to $E_{01}/E_{02}$ etc., so that we have an equal superposition:
+
+\begin{align}
+E_{01}/E_{02} \rightarrow \frac{\sqrt{\gamma'}\left(1-\gamma'\right)^2}{\sqrt{2}}\left(\Ket{10}+\Ket{01}\right)\left(a\Ket{00}+b\Ket{11}\right)\\
+E_{03}/E_{04} \rightarrow \frac{\sqrt{\gamma'}\left(1-\gamma'\right)^2}{\sqrt{2}}\left(a\Ket{00}+b\Ket{11}\right)\left(\Ket{10}+\Ket{01}\right)\\
+\end{align}
+
+And similar for $E_{10}/E_{20}$ and $E_{30}/E_{40}$ upto a logical flip. How do we get from these states back to something proportional to $\Ket{\psi_c}$? For $E_{10}/E_{20}$ we can apply two CNOTs from the second qubit to the third and fourth qubit and then applying an $X$ flip to the first qubit.
+
+\subsection*{Higher order effects}
+We are missing the error syndromes
+
+\begin{center}
+  \begin{tabular}{  c | c  c  c}
+& $Z_1Z_2Z_3Z_4$ & $Z_1Z_2$ & $Z_3Z_4$\\
+    \hline
+$E_{1?}$ &  1 & 0 & 0 \\
+$E_{2?}$ &  1 & 1 & 1 \\
+$E_{3?}$ &  0 & 1 & 1 \\
+  \end{tabular}
+\end{center}
+
+\newpage
+\section{Superoperator}
+Define $r = \sqrt{1-\gamma}$, so that $\gamma = 1-r^2$. The superoperator is then
+
+\begin{gather}
+\begin{bmatrix}
+1-5r^2+22r^2-57^3+88r^4-72r^5+28r^6-4r^7 & 0 & 0 & (1-r)^2\left(1-3r+13r^2-6r^3\right)\\
+0 & \frac{1}{2}r^2\left(1+8r^2-8r^3+r^4\right) & \frac{1}{2}(1-r)^2r^2\left(1+4r-3r^2\right) & 0\\
+0 & \frac{1}{2}(1-r)^2r^2\left(1+4r-3r^2\right) & \frac{1}{2}r^2\left(1+8r^2-8r^3+r^4\right) & 0\\
+(1-r)^2r\left(5-12r+28r^2-20r^3+4r^4\right) & 0 & 0 & r\left(5-20r+35r^2-25r^3+6r^4\right)
+\end{bmatrix}
+\end{gather}
+With eigenvalues
+
+\begin{gather}
+r^3 \left(2 r^3-9 r^2+9 r-1\right)\ ,\\
+-r^6+r^5-r^4+r^3+r^2\ ,\\
+r^2 \left(-4 r^5+28 r^4-66 r^3+63 r^2-22 r+2\right)\ ,\\
+1\ ,
+\end{gather}
+with corresponding (unnormalized) eigenvectors
+
+\begin{gather}
+\begin{bmatrix}
+0 & 1 & -1 & 0
+\end{bmatrix}^T\, \\
+\begin{bmatrix}
+0 & 1 & 1 & 0
+\end{bmatrix}^T\, \\
+\begin{bmatrix}
+-1 & 0 & 0 & -1
+\end{bmatrix}^T\, \\
+\begin{bmatrix}
+\frac{-6 r^3+13 r^2-3 r+1}{4 r^5-20 r^4+28 r^3-12 r^2+5 r} & 0 & 0 & 1
+\end{bmatrix}^T\ . \\
+\end{gather}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{eigvals1.pdf}
+\end{figure}
+\end{document}
